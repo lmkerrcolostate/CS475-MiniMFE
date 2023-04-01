@@ -130,7 +130,7 @@ void ToyMFE(long N, int* A, int* B, int* last){
 	#define S1(i,j) T(i,j) = (T(i,j-1))+(B(j))
 	#define S2(i,j) T(i,j) = (A(i))+(T(i-1,j-1))
 	#define S3(i,j) T(i,j) = __min_int(T(i-1,j),__min_int(((T(i-1,j-1))+(A(i)))+(B(j)),T(i,j-1)))
-	#define S4(i0,i1) *last = T(N,N)
+	#define S4(i0,i1) *last = T(N-1,N-1)
 	{
 		//Domain
 		//{i,j|j==0 && i==0 && N>=1}
@@ -161,6 +161,7 @@ void ToyMFE(long N, int* A, int* B, int* last){
 				S2((N-1),(N-1));
 			}
 		}
+		S4(i0,i1);
 	}
 	#undef S0
 	#undef S1
