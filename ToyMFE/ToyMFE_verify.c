@@ -179,7 +179,7 @@ int eval_last(long N){
 	if ( _flag_last == 'N' ) {
 		_flag_last = 'I';
 	//Body for last
-		last = eval_T(N,N,N);
+		last = eval_T(N,N-1,N-1);
 		_flag_last = 'F';
 	} else if ( _flag_last == 'I' ) {
 		printf("There is a self dependence on last at () \n");

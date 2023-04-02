@@ -4,7 +4,7 @@ CC?=gcc
 OBJS = ToyMFE.o 
 all: plain check verify verify-rand
 
-debug: CFLAGS =-DDEBUG -g -Wall -Wextra -std=c99 -I/usr/include/malloc/
+debug: CFLAGS =-DDEBUG -O3 -g -Wall -Wextra -std=c99 -I/usr/include/malloc/
 debug: all
 		
 plain: $(OBJS)
