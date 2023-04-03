@@ -24,7 +24,7 @@
 !*.*
 # And directories
 !*/
-# No bject files
+# No object files
 *.o
 # Don't track these compiled files either
 *.check
