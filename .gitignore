@@ -13,3 +13,20 @@
 **/.history
 
 # End of https://www.gitignore.io/api/visualstudiocode
+
+### No Mac Garbage
+*.DS_Store
+
+### No compiled files
+# Ignore everything
+*
+# Except stuff with extensions
+!*.*
+# And directories
+!*/
+# No object files
+*.o
+# Don't track these compiled files either
+*.check
+*.verify
+*.verify-rand
