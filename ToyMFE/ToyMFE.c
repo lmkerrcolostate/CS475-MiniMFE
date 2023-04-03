@@ -140,9 +140,6 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		//{i0,i1|0==-1}
 		long c1,c2;
 		S0((0),(0));
-		printf("A[0]: %ld\n", A[0]);
-		printf("B[0]: %ld\n", B[0]);
-		printf("T[0][0]: %ld\n", T[0][0]);
 		if ((N >= 2)) {
 			{
 				for(c2=1;c2 <= N-1;c2+=1)
