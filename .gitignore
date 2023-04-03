@@ -24,3 +24,5 @@
 !*.*
 # And directories
 !*/
+# No bject files
+*.o
