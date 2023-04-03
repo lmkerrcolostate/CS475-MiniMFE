@@ -167,7 +167,7 @@ long eval_T(long N, long i, long j){
 	if ( _flag_T(i,j) == 'N' ) {
 		_flag_T(i,j) = 'I';
 	//Body for T
-		T(i,j) = (((j == 0 && i == 0))?(A(i))+(B(j)):(((i == 0 && j >= 1))?(eval_T(N,i,j-1))+(B(j)):(((j == i && i >= 1))?(A(i))+(eval_T(N,i-1,j-1)):(__min_int(eval_T(N,i-1,j),__min_int(((eval_T(N,i-1,j-1))+(A(i)))+(B(j)),eval_T(N,i,j-1)))))));
+		T(i,j) = (((j == 0 && i == 0))?(A(i))+(B(j)):(((i == 0 && j >= 1))?(eval_T(N,i,j-1))+(B(j)):(((j == i && i >= 1))?(A(i))+(eval_T(N,i-1,j-1)):(__min_long(eval_T(N,i-1,j),__min_long(((eval_T(N,i-1,j-1))+(A(i)))+(B(j)),eval_T(N,i,j-1)))))));
 		_flag_T(i,j) = 'F';
 	} else if ( _flag_T(i,j) == 'I' ) {
 		printf("There is a self dependence on T at (%d,%d) \n",i,j);
