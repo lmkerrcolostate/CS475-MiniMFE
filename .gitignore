@@ -26,3 +26,7 @@
 !*/
 # No bject files
 *.o
+# Don't track these compiled files either
+*.check
+*.verify
+*.verify-rand
