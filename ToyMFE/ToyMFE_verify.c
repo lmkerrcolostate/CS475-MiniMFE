@@ -95,17 +95,17 @@ inline double __min_double(double x, double y){
 
 
 ///Global Variables
-static int* A;
-static int* B;
-static int** T;
-static int last;
+static long* A;
+static long* B;
+static long** T;
+static long last;
 static char _flag_last;
 static char** _flag_T;
 
 
 //Local Function Declarations
-int eval_T(long, int, int);
-int eval_last(long);
+long eval_T(long, long, long);
+long eval_last(long);
 
 //Memory Macros
 #define A(i) A[i]
@@ -113,7 +113,7 @@ int eval_last(long);
 #define T(i,j) T[i][j]
 #define _flag_T(i,j) _flag_T[i][j]
 
-void ToyMFE_verify(long N, int* _local_A, int* _local_B, int* _local_last){
+void ToyMFE_verify(long N, long* _local_A, long* _local_B, long* _local_last){
 	///Parameter checking
 	if (!((N >= 1))) {
 		printf("The value of parameters are not valid.\n");
@@ -125,12 +125,12 @@ void ToyMFE_verify(long N, int* _local_A, int* _local_B, int* _local_last){
 	
 	
 	//Memory Allocation
-	int mz1, mz2;
+	long mz1, mz2;
 	
-	int* _lin_T = (int*)malloc(sizeof(int)*((N) * (N)));
-	mallocCheck(_lin_T, ((N) * (N)), int);
-	T = (int**)malloc(sizeof(int*)*(N));
-	mallocCheck(T, (N), int*);
+	long* _lin_T = (long*)malloc(sizeof(long)*((N) * (N)));
+	mallocCheck(_lin_T, ((N) * (N)), long);
+	T = (long**)malloc(sizeof(long*)*(N));
+	mallocCheck(T, (N), long*);
 	for (mz1=0;mz1 < N; mz1++) {
 		T[mz1] = &_lin_T[(mz1*(N))];
 	}
@@ -163,7 +163,7 @@ void ToyMFE_verify(long N, int* _local_A, int* _local_B, int* _local_last){
 	free(_lin__flag_T);
 	free(_flag_T);
 }
-int eval_T(long N, int i, int j){
+long eval_T(long N, long i, long j){
 	if ( _flag_T(i,j) == 'N' ) {
 		_flag_T(i,j) = 'I';
 	//Body for T
@@ -175,7 +175,7 @@ int eval_T(long N, int i, int j){
 	}
 	return T(i,j);
 }
-int eval_last(long N){
+long eval_last(long N){
 	if ( _flag_last == 'N' ) {
 		_flag_last = 'I';
 	//Body for last

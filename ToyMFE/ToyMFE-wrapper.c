@@ -48,8 +48,8 @@
 #define var_last_verify() last_verify
 
 //function prototypes
-void ToyMFE(long, int*, int*, int*);
-void ToyMFE_verify(long, int*, int*, int*);
+void ToyMFE(long, long*, long*, long*);
+void ToyMFE_verify(long, long*, long*, long*);
 
 //main
 int main(int argc, char** argv) {
@@ -90,14 +90,14 @@ int main(int argc, char** argv) {
 	
 
 	//Memory Allocation
-	int mz1, mz2;
-	int* A = (int*)malloc(sizeof(int)*(N+1));
-	mallocCheck(A, (N+1), int);
-	int* B = (int*)malloc(sizeof(int)*(N+1));
-	mallocCheck(B, (N+1), int);
-	int last;
+	long mz1, mz2;
+	long* A = (long*)malloc(sizeof(long)*(N+1));
+	mallocCheck(A, (N+1), long);
+	long* B = (long*)malloc(sizeof(long)*(N+1));
+	mallocCheck(B, (N+1), long);
+	long last;
 	#ifdef VERIFY
-		int last_verify;
+		long last_verify;
 	#endif
 
 	//Initialization of rand
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 		#endif
 		
 		
-		int c1;
+		long c1;
 		for(c1=0;c1 <= N;c1+=1)
 		 {
 		 	S0((c1));
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 		#endif
 		
 		
-		int c1;
+		long c1;
 		for(c1=0;c1 <= N;c1+=1)
 		 {
 		 	S0((c1));

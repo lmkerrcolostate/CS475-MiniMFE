@@ -110,19 +110,19 @@ inline double __min_double(double x, double y){
 #define B(i) B[i]
 #define T(i,j) T[i][j]
 
-void ToyMFE(long N, int* A, int* B, int* last){
+void ToyMFE(long N, long* A, long* B, long* last){
 	///Parameter checking
 	if (!((N >= 1))) {
 		printf("The value of parameters are not valid.\n");
 		exit(-1);
 	}
 	//Memory Allocation
-	int mz1, mz2;
+	long mz1, mz2;
 	
-	int* _lin_T = (int*)malloc(sizeof(int)*((N) * (N)));
-	mallocCheck(_lin_T, ((N) * (N)), int);
-	int** T = (int**)malloc(sizeof(int*)*(N));
-	mallocCheck(T, (N), int*);
+	long* _lin_T = (long*)malloc(sizeof(long)*((N) * (N)));
+	mallocCheck(_lin_T, ((N) * (N)), long);
+	long** T = (long**)malloc(sizeof(long*)*(N));
+	mallocCheck(T, (N), long*);
 	for (mz1=0;mz1 < N; mz1++) {
 		T[mz1] = &_lin_T[(mz1*(N))];
 	}
@@ -138,8 +138,11 @@ void ToyMFE(long N, int* A, int* B, int* last){
 		//{i,j|j==i && i>=1 && N>=1 && N>=i+1}
 		//{i,j|i>=1 && j>=i+1 && N>=1 && N>=i && j>=0 && N>=j+1}
 		//{i0,i1|0==-1}
-		int c1,c2;
+		long c1,c2;
 		S0((0),(0));
+		printf("A[0]: %ld\n", A[0]);
+		printf("B[0]: %ld\n", B[0]);
+		printf("T[0][0]: %ld\n", T[0][0]);
 		if ((N >= 2)) {
 			{
 				for(c2=1;c2 <= N-1;c2+=1)
