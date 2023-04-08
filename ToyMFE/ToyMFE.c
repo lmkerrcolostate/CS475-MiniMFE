@@ -108,7 +108,7 @@ inline double __min_double(double x, double y){
 //Memory Macros
 #define A(i) A[i]
 #define B(i) B[i]
-#define T(i,j) T[MOD(i,2)][j]
+#define T(i,j) T[-(i)+(j)]
 
 void ToyMFE(long N, long* A, long* B, long* last){
 	///Parameter checking
@@ -117,15 +117,9 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		exit(-1);
 	}
 	//Memory Allocation
-	long mz1, mz2;
-	
-	long* _lin_T = (long*)malloc(sizeof(long)*(2 * N));
-	mallocCheck(_lin_T, (2 * N), long);
-	long** T = (long**)malloc(sizeof(long*)*2);
-	mallocCheck(T, 2, long*);
-	for (mz1=0;mz1 < 2; mz1++) {
-		T[mz1] = &_lin_T[(mz1*(N))];
-	}
+	long* T = (long*)malloc(sizeof(long*)*(N));
+	mallocCheck(T, (N), long);
+
 	#define S0(i,j) T(i,j) = (A(i))+(B(j))
 	#define S1(i,j) T(i,j) = (T(i,j-1))+(B(j))
 	#define S2(i,j) T(i,j) = (A(i))+(T(i-1,j-1))
@@ -170,7 +164,6 @@ void ToyMFE(long N, long* A, long* B, long* last){
 	#undef S4
 	
 	//Memory Free
-	free(_lin_T);
 	free(T);
 }
 
