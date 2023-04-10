@@ -133,28 +133,61 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		//{i,j|i>=1 && j>=i+1 && N>=1 && N>=i && j>=0 && N>=j+1}
 		//{i0,i1|0==-1}
 		long c1,c2;
-		S0((0),(0));
-		if ((N >= 2)) {
+		S0((0),(0)); // Edge Case
+					printf("START\nS0 ");
+		 			for(int j = 0; j < N; j++){printf("%d, ", T(c1,j));}
+			 		printf("\n\n");
+		if ((N >= 2)) { // Edge Case? Won't tile for now
 			{
 				for(c2=1;c2 <= N-1;c2+=1)
 				 {
 				 	S1((0),(c2));
+					printf("S2 ");
+		 			for(int j = 0; j < N; j++){printf("%d, ", T(c1,j));}
+			 		printf("\n");
 				 }
 			}
 		}
+		printf("\n");
+
+		/*int BKS = 10;
+		for(int kk = 0; kk < N; kk += BKS){ //for each diagmonal slice
+
+		//For each block within a Slice
+			// Sets of rows and columns make up blocks of a diagonal slice
+			for(){ // each row
+				for(){ //each column
+				}
+			}
+		}*/
+
 		for(c1=1;c1 <= N-2;c1+=1)
 		 {
 		 	S2((c1),(c1));
+				printf("S2 ");
+				for(int j = 0; j < N; j++){printf("%d, ", T(c1,j));}
+			 	printf("\n");
+
 		 	for(c2=c1+1;c2 <= N-1;c2+=1)
 		 	 {
 		 	 	S3((c1),(c2));
-		 	 }
+				printf("S3 ");
+		 		for(int j = 0; j < N; j++){printf("%d, ", T(c1,j));}
+			 	printf("\n");
+			 }
+
 		 }
-		if ((N >= 2)) {
+		 printf("\n");
+
+		if ((N >= 2)) { // Edge Case
 			{
 				S2((N-1),(N-1));
+				printf("S2 ");
+		 		for(int j = 0; j < N; j++){printf("%d, ", T(c1,j));}
+			 	printf("\n END");
 			}
 		}
+		printf("\n");
 		S4(i0,i1);
 	}
 	#undef S0
