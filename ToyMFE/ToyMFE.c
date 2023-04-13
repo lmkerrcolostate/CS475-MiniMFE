@@ -150,7 +150,7 @@ void ToyMFE(long N, long* A, long* B, long* last){
 						}
 					}
 				}
-				for(c1=max(ii, 1); c1 <= min(ii + BLOCK_SIZE, N - 2); c1+=1)
+				for(c1=ii; c1 <= min(ii + BLOCK_SIZE, N - 2); c1+=1)
 				{
 					S2((c1),(c1));
 					for(c2=c1+1; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
