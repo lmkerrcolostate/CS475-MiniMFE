@@ -140,7 +140,7 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		S0((0),(0));
 
 		// Tiled portion
-		for (ii = 0; ii < N - 2; ii += BLOCK_SIZE) {
+		for (ii = 1; ii < N - 2; ii += BLOCK_SIZE) {
 			for (jj = max(ii, 1); jj < N - 1; jj += BLOCK_SIZE) {
 				if ((N >= 2)) {
 					{
