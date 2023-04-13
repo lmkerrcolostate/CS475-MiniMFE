@@ -110,6 +110,9 @@ inline double __min_double(double x, double y){
 #define B(i) B[i]
 #define T(i,j) T[-(i)+(j)]
 
+//Tiling Macros
+#define BLOCK_SIZE 64
+
 void ToyMFE(long N, long* A, long* B, long* last){
 	///Parameter checking
 	if (!((N >= 1))) {
@@ -133,23 +136,31 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		//{i,j|i>=1 && j>=i+1 && N>=1 && N>=i && j>=0 && N>=j+1}
 		//{i0,i1|0==-1}
 		long c1,c2;
+		long ii, jj;
 		S0((0),(0));
-		if ((N >= 2)) {
-			{
-				for(c2=1;c2 <= N-1;c2+=1)
-				 {
-				 	S1((0),(c2));
-				 }
+
+		// Tiled portion
+		for (ii = 1; ii < N - 2; ii += BLOCK_SIZE) {
+			for (jj = ii; jj < N - 1; jj += BLOCK_SIZE) {
+				if ((N >= 2)) {
+					{
+						for(c2=jj; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
+						{
+							S1((0),(c2));
+						}
+					}
+				}
+				for(c1=ii; c1 <= min(ii + BLOCK_SIZE, N - 2); c1+=1)
+				{
+					S2((c1),(c1));
+					for(c2=c1+1; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
+					{
+						S3((c1),(c2));
+					}
+				}
 			}
-		}
-		for(c1=1;c1 <= N-2;c1+=1)
-		 {
-		 	S2((c1),(c1));
-		 	for(c2=c1+1;c2 <= N-1;c2+=1)
-		 	 {
-		 	 	S3((c1),(c2));
-		 	 }
-		 }
+		} // End tiled loops
+
 		if ((N >= 2)) {
 			{
 				S2((N-1),(N-1));
