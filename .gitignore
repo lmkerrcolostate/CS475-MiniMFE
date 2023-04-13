@@ -30,3 +30,5 @@
 *.check
 *.verify
 *.verify-rand
+# Don't ignore Makefiles
+!Makefile
