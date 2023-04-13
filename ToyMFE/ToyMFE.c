@@ -111,7 +111,7 @@ inline double __min_double(double x, double y){
 #define T(i,j) T[-(i)+(j)]
 
 //Tiling Macros
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 2000
 
 void ToyMFE(long N, long* A, long* B, long* last){
 	///Parameter checking
@@ -142,7 +142,7 @@ void ToyMFE(long N, long* A, long* B, long* last){
 		// Tiled portion
 		for (ii = 1; ii < N - 2; ii += BLOCK_SIZE) {
 			for (jj = ii; jj < N - 1; jj += BLOCK_SIZE) {
-				if ((N >= 2)) {
+				if (ii == 1 && (N >= 2)) {
 					{
 						for(c2=jj; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
 						{
