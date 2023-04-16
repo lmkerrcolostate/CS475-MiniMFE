@@ -113,7 +113,7 @@ float reduce_MiniMFE_T_1(long, int, int, float**);
 #define B(i) B[i]
 #define W(i,j) W[i][j]
 #define T(i,j) T[i][j]
-#define H(i,j) H[i][j]
+#define H(i,j) H[-(i)+(j)]
 
 void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	///Parameter checking
@@ -132,13 +132,13 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 		T[mz1] = &_lin_T[(mz1*(N+1))];
 	}
 	
-	float* _lin_H = (float*)malloc(sizeof(float)*((N+1) * (N+1)));
-	mallocCheck(_lin_H, ((N+1) * (N+1)), float);
-	float** H = (float**)malloc(sizeof(float*)*(N+1));
+	//float* _lin_H = (float*)malloc(sizeof(float)*((N+1) * (N+1)));
+	//mallocCheck(_lin_H, ((N+1) * (N+1)), float);
+	float* H = (float*)malloc(sizeof(float)*(N+1));
 	mallocCheck(H, (N+1), float*);
-	for (mz1=0;mz1 < N+1; mz1++) {
+	/*for (mz1=0;mz1 < N+1; mz1++) {
 		H[mz1] = &_lin_H[(mz1*(N+1))];
-	}
+	}*/
 	#define S2(i,j) H(-i+N,j) = foo(A(-i+N),B(j))
 	#define S3(i,j) H(-i+N,j) = __min_float(foo(A(-i+N),B(j)),__min_float(H(-i+N+1,j),H(-i+N,j-1)))
 	#define S4(i,j) H(-i+N,j) = bar((foo(A(-i+N),B(j)))+(T(-i+N+1,j-1)),H(-i+N+1,j),H(-i+N,j-1))
@@ -185,7 +185,7 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	free(_lin_T);
 	free(T);
 	
-	free(_lin_H);
+	//free(_lin_H);
 	free(H);
 }
 float reduce_MiniMFE_T_1(long N, int ip, int jp, float** T){
