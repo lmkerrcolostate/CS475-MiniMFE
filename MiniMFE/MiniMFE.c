@@ -136,12 +136,19 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	float* H = (float*)malloc(sizeof(float*)*(N+1));
 	mallocCheck(H, (N+1), float*);
 
-	#define S2(i,j) H(-i+N,j) = foo(A(-i+N),B(j))
+	#define S2(i,j) H(i,j) = foo(A(i),B(j))
+	#define S3(i,j) H(i,j) = __min_float(foo(A(i),B(j)),__min_float(H(i+1,j),H(i,j-1)))
+	#define S4(i,j) H(i,j) = bar((foo(A(i),B(j)))+(T(i+1,j-1)),H(i+1,j),H(i,j-1))
+	#define S5(i0,i1) *score = T(0,N)
+	#define S0(i,j) T(i,j) = __min_float(W(i,j),H(i,j))
+	#define S1(i,j) T(i,j) = __min_float(__min_float(H(i,j),W(i,j)),reduce_MiniMFE_T_1(N,i,j,T))
+
+	/*#define S2(i,j) H(-i+N,j) = foo(A(-i+N),B(j))
 	#define S3(i,j) H(-i+N,j) = __min_float(foo(A(-i+N),B(j)),__min_float(H(-i+N+1,j),H(-i+N,j-1)))
 	#define S4(i,j) H(-i+N,j) = bar((foo(A(-i+N),B(j)))+(T(-i+N+1,j-1)),H(-i+N+1,j),H(-i+N,j-1))
 	#define S5(i0,i1) *score = T(0,N)
 	#define S0(i,j) T(-i+N,j) = __min_float(W(-i+N,j),H(-i+N,j))
-	#define S1(i,j) T(-i+N,j) = __min_float(__min_float(H(-i+N,j),W(-i+N,j)),reduce_MiniMFE_T_1(N,-i+N,j,T))
+	#define S1(i,j) T(-i+N,j) = __min_float(__min_float(H(-i+N,j),W(-i+N,j)),reduce_MiniMFE_T_1(N,-i+N,j,T))*/
 	{
 		//Domain
 		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
