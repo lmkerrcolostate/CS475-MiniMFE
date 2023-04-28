@@ -114,6 +114,7 @@ float reduce_MiniMFE_T_1(long, int, int, float**);
 #define W(i,j) W[i][j]
 #define T(i,j) T[i][j]
 #define H(i,j) H[MOD(i + j, N + 1)]
+#define BLOCK_SIZE 64
 
 void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	///Parameter checking
@@ -149,25 +150,42 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 		//{i0,i1|i1==N+1 && i0==N+1 && N>=1}
 		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
 		//{i,j|i+j>=N+1 && N>=1 && N>=i && N>=j && i+j>=1}
-		int c1,c2;
-		S2((0),(N));
-		S0((0),(N));
-		S2((1),(N-1));
-		S0((1),(N-1));
-		S3((1),(N));
-		S1((1),(N));
-		for(c1=2;c1 <= N;c1+=1)
-		 {
-		 	S2((c1),(-c1+N));
-		 	S0((c1),(-c1+N));
-		 	S3((c1),(-c1+N+1));
-		 	S1((c1),(-c1+N+1));
-		 	for(c2=-c1+N+2;c2 <= N;c2+=1)
-		 	 {
-		 	 	S4((c1),(c2));
-		 	 	S1((c1),(c2));
-		 	 }
-		 }
+		int c1, c2, ii, jj;
+		S2((N),(N));
+		S0((N),(N));
+		S2((N-1),(N-1));
+		S0((N-1),(N-1));
+		S3((N-1),(N));
+		S1((N-1),(N));
+
+		for (ii = N-2; ii >= 0; ii -= BLOCK_SIZE) {
+			for (jj = ii; jj <= N-2; jj += (BLOCK_SIZE*2)) {
+
+				for(c1=ii; c1 >= max(ii - BLOCK_SIZE, 0); c1-=1){
+					S2((c1),(c1));
+					S0((c1),(c1));
+					S3((c1),(c1+1));
+					S1((c1),(c1+1));
+					for(c2=c1; c2 <= min(jj + (BLOCK_SIZE*2), N-2); c2+=1){
+						S4((c1),(c2+2));
+						S1((c1),(c2+2));
+					}
+				}
+
+			}
+		}
+
+		/*for(c1=N-2; c1 >= 0; c1-=1){
+		 	S2((c1),(c1));
+		 	S0((c1),(c1));
+		 	S3((c1),(c1+1));
+		 	S1((c1),(c1+1));
+		 	for(c2=c1; c2 <= N-2; c2+=1){
+		 	 	S4((c1),(c2+2));
+		 	 	S1((c1),(c2+2));
+		 	}
+		}*/
+
 		S5((N+1),(N+1));
 	}
 	#undef S2
