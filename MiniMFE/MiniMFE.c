@@ -169,13 +169,14 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 		int c1, c2, ii, jj;
 		S2((N),(N));
 		S0((N),(N));
+		T2(N, N) = T(N, N);
+
 		S2((N-1),(N-1));
 		S0((N-1),(N-1));
+		T2(N-1, N-1) = T(N-1, N-1);
+
 		S3((N-1),(N));
 		S1((N-1),(N));
-
-		T2(N, N) = T(N, N);
-		T2(N-1, N-1) = T(N-1, N-1);
 		T2(N, N - 1) = T(N - 1, N);
 
 		for (ii = N-2; ii >= 0; ii -= BLOCK_SIZE) {
@@ -184,17 +185,17 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 				for(c1=ii; c1 >= max(ii - BLOCK_SIZE, 0); c1-=1){
 					S2((c1),(c1));
 					S0((c1),(c1));
+					T2(c1, c1) = T(c1, c1);
+
 					S3((c1),(c1+1));
 					S1((c1),(c1+1));
-
-					T2(c1, c1) = T(c1, c1);
 					T2((c1 + 1), c1) = T(c1, (c1 + 1));
 					
 					for(c2=c1; c2 <= min(jj + (BLOCK_SIZE*2), N-2); c2+=1){
 						S4((c1),(c2+2));
 						S1((c1),(c2+2));
 
-						T2(c2, c1) = T(c1, c2);
+						T2(c2+2, c1) = T(c1, c2+2);
 					}
 				}
 
