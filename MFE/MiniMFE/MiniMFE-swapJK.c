@@ -9,7 +9,11 @@
 #include <string.h>
 #include <limits.h>
 #include <float.h>
+#include <omp.h>
+#include <immintrin.h>
+#include <malloc.h>
 
+#include "external_functions.h"
 
 // Common Macros
 #define max(x, y)   ((x)>(y) ? (x) : (y))
@@ -26,6 +30,11 @@
 #define LB_SHIFT(b,s)  ((int)ceild(b,s) * s)
 #define MOD(i,j)   ((i)%(j))
 #define mallocCheck(v,s,d) if ((v) == NULL) { printf("Failed to allocate memory for %s : size=%lu\n", "sizeof(d)*(s)", sizeof(d)*(s)); exit(-1); }
+// Reduction Operators
+#define RADD(x,y)    ((x)+=(y))
+#define RMUL(x,y)    ((x)*=(y))
+#define RMAX(x,y)    ((x)=MAX((x),(y)))
+#define RMIN(x,y)    ((x)=MIN((x),(y)))
 
 // Common functions for min and max
 //functions for integer max
@@ -92,107 +101,92 @@ inline double __min_double(double x, double y){
 	return ((x)>(y) ? (y) : (x));
 }
 
-
-
-///Global Variables
-static long* A;
-static long* B;
-static long** T;
-static long last;
-static char _flag_last;
-static char** _flag_T;
-
-
-//Local Function Declarations
-long eval_T(long, long, long);
-long eval_last(long);
-
 //Memory Macros
 #define A(i) A[i]
 #define B(i) B[i]
+#define W(i,j) W[i][j]
 #define T(i,j) T[i][j]
-#define _flag_T(i,j) _flag_T[i][j]
+#define H(i,j) H[MOD(i + j, N + 1)]
 
-void ToyMFE_verify(long N, long* _local_A, long* _local_B, long* _local_last){
+void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	///Parameter checking
 	if (!((N >= 1))) {
 		printf("The value of parameters are not valid.\n");
 		exit(-1);
 	}
-	//Copy to global
-	A = _local_A;
-	B = _local_B;
-	
-	
 	//Memory Allocation
-	long mz1, mz2;
+	int mz1, mz2;
 	
-	long* _lin_T = (long*)malloc(sizeof(long)*((N) * (N)));
-	mallocCheck(_lin_T, ((N) * (N)), long);
-	T = (long**)malloc(sizeof(long*)*(N));
-	mallocCheck(T, (N), long*);
-	for (mz1=0;mz1 < N; mz1++) {
-		T[mz1] = &_lin_T[(mz1*(N))];
+	float* _lin_T = (float*)malloc(sizeof(float)*((N+1) * (N+1)));
+	mallocCheck(_lin_T, ((N+1) * (N+1)), float);
+	float** T = (float**)malloc(sizeof(float*)*(N+1));
+	mallocCheck(T, (N+1), float*);
+	for (mz1=0;mz1 < N+1; mz1++) {
+		T[mz1] = &_lin_T[(mz1*(N+1))];
 	}
 	
-	_flag_last = 'N';
-	
-	char* _lin__flag_T = (char*)malloc(sizeof(char)*((N) * (N)));
-	mallocCheck(_lin__flag_T, ((N) * (N)), char);
-	_flag_T = (char**)malloc(sizeof(char*)*(N));
-	mallocCheck(_flag_T, (N), char*);
-	for (mz1=0;mz1 < N; mz1++) {
-		_flag_T[mz1] = &_lin__flag_T[(mz1*(N))];
-	}
-	memset(_lin__flag_T, 'N', ((N) * (N)));
-	#define S0() eval_last(N)
+	float* H = (float*)malloc(sizeof(float*)*(N+1));
+	mallocCheck(H, (N+1), float*);
+
 	{
 		//Domain
-		//{|}
-		S0();
+		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
+		//{i,j|i+j==N+1 && N>=1 && N>=i && i>=1}
+		//{i,j|i+j>=N+2 && N>=1 && N>=i && i>=0 && N>=j && j>=0 && i+j>=1}
+		//{i0,i1|i1==N+1 && i0==N+1 && N>=1}
+		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
+		//{i,j|i+j>=N+1 && N>=1 && N>=i && N>=j && i+j>=1}
+		int i, j, k;
+	    float reduceVar, __temp__;
+
+		H(N, N) = foo(A(N), B(N));
+		T(N, N) = __min_float(W(N, N), H(N, N));
+		H(N - 1, N - 1) = foo(A(N - 1), B(N - 1));
+		T(N - 1, N - 1) = __min_float(W(N - 1, N - 1), H(N - 1, N - 1));
+		H(N - 1, N) = __min_float(foo(A(N - 1), B(N)), __min_float(H(N, N), H(N - 1,N - 1)));
+		T(N - 1, N) = __min_float(__min_float(H(N - 1, N), W(N - 1, N)), (T(N - 1, N - 1) + T(N, N)));
+
+		for(i = N - 2; i >= 0; --i) {
+			H(i, i) = foo(A(i), B(i));
+			T(i, i) = __min_float(W(i, i), H(i, i));
+			H(i, (i + 1)) = __min_float(foo(A(i), B(i + 1)), __min_float(H(i + 1, i + 1), H(i, i)));
+			T(i, (i + 1)) = __min_float(__min_float(H(i, i + 1), W(i, i + 1)), (T(i, i) + T(i + 1, i + 1)));
+
+			// Interchanged loop structure
+			reduceVar = FLT_MAX;
+			for(k = i; k <= N - 1; ++k) {
+
+				reduceVar = FLT_MAX;
+				for(j = max(i + 2, k + 1); j <= N; ++j) {
+					if (k == i) {
+						H(i, j) = bar((foo(A(i), B(j))) + (T(i + 1, j - 1)), H(i + 1, j), H(i, j - 1));
+						reduceVar = __min_float(H(i, j), W(i, j));
+					}
+					else { 
+						reduceVar = T(i, j); 
+					}
+
+					T(i, j) = __min_float(reduceVar, (T(i, k)) + (T(k + 1, j))); 
+
+				}
+			} // End interchanged loop section
+		}
+		*score = T(0, N);
 	}
-	#undef S0
-	//Copy scalars to output
-	*_local_last = last;
 	
 	//Memory Free
 	free(_lin_T);
 	free(T);
 	
-	
-	free(_lin__flag_T);
-	free(_flag_T);
-}
-long eval_T(long N, long i, long j){
-	if ( _flag_T(i,j) == 'N' ) {
-		_flag_T(i,j) = 'I';
-	//Body for T
-		T(i,j) = (((j == 0 && i == 0))?(A(i))+(B(j)):(((i == 0 && j >= 1))?(eval_T(N,i,j-1))+(B(j)):(((j == i && i >= 1))?(A(i))+(eval_T(N,i-1,j-1)):(__min_long(eval_T(N,i-1,j),__min_long(((eval_T(N,i-1,j-1))+(A(i)))+(B(j)),eval_T(N,i,j-1)))))));
-		_flag_T(i,j) = 'F';
-	} else if ( _flag_T(i,j) == 'I' ) {
-		printf("There is a self dependence on T at (%d,%d) \n",i,j);
-		exit(-1);
-	}
-	return T(i,j);
-}
-long eval_last(long N){
-	if ( _flag_last == 'N' ) {
-		_flag_last = 'I';
-	//Body for last
-		last = eval_T(N,N-2,N-1);
-		_flag_last = 'F';
-	} else if ( _flag_last == 'I' ) {
-		printf("There is a self dependence on last at () \n");
-		exit(-1);
-	}
-	return last;
+	free(H);
 }
 
 //Memory Macros
 #undef A
 #undef B
+#undef W
 #undef T
-#undef _flag_T
+#undef H
 
 
 //Common Macro undefs
@@ -208,3 +202,7 @@ long eval_last(long N){
 #undef FDIV
 #undef LB_SHIFT
 #undef MOD
+#undef RADD
+#undef RMUL
+#undef RMAX
+#undef RMIN

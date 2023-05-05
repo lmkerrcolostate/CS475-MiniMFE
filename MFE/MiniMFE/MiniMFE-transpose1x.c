@@ -13,6 +13,7 @@
 #include <immintrin.h>
 #include <malloc.h>
 
+#include "external_functions.h"
 
 // Common Macros
 #define max(x, y)   ((x)>(y) ? (x) : (y))
@@ -100,88 +101,95 @@ inline double __min_double(double x, double y){
 	return ((x)>(y) ? (y) : (x));
 }
 
-
-
-
-
-
 //Memory Macros
 #define A(i) A[i]
 #define B(i) B[i]
-#define T(i,j) T[-(i)+(j)]
+#define W(i,j) W[i][j]
+#define T(i,j) T[i][j]
+#define H(i,j) H[MOD(i + j, N + 1)]
 
-//Tiling Macros
-#define BLOCK_SIZE 64
-
-void ToyMFE(long N, long* A, long* B, long* last){
+void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	///Parameter checking
 	if (!((N >= 1))) {
 		printf("The value of parameters are not valid.\n");
 		exit(-1);
 	}
 	//Memory Allocation
-	long* T = (long*)malloc(sizeof(long*)*(N));
-	mallocCheck(T, (N), long);
+	int mz1, mz2;
+	
+	float* _lin_T = (float*)malloc(sizeof(float)*((N+1) * (N+1)));
+	mallocCheck(_lin_T, ((N+1) * (N+1)), float);
+	float** T = (float**)malloc(sizeof(float*)*(N+1));
+	mallocCheck(T, (N+1), float*);
+	for (mz1=0;mz1 < N+1; mz1++) {
+		T[mz1] = &_lin_T[(mz1*(N+1))];
+	}
+	
+	float* H = (float*)malloc(sizeof(float*)*(N+1));
+	mallocCheck(H, (N+1), float*);
 
-	#define S0(i,j) T(i,j) = (A(i))+(B(j))
-	#define S1(i,j) T(i,j) = (T(i,j-1))+(B(j))
-	#define S2(i,j) T(i,j) = (A(i))+(T(i-1,j-1))
-	#define S3(i,j) T(i,j) = __min_long(T(i-1,j),__min_long(((T(i-1,j-1))+(A(i)))+(B(j)),T(i,j-1)))
-	#define S4(i0,i1) *last = T(N-2,N-1)
 	{
 		//Domain
-		//{i,j|j==0 && i==0 && N>=1}
-		//{i,j|i==0 && j>=1 && N>=1 && N>=j+1}
-		//{i,j|j==i && i>=1 && N>=1 && N>=i+1}
-		//{i,j|i>=1 && j>=i+1 && N>=1 && N>=i && j>=0 && N>=j+1}
-		//{i0,i1|0==-1}
-		long c1,c2;
-		long ii, jj;
-		S0((0),(0));
+		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
+		//{i,j|i+j==N+1 && N>=1 && N>=i && i>=1}
+		//{i,j|i+j>=N+2 && N>=1 && N>=i && i>=0 && N>=j && j>=0 && i+j>=1}
+		//{i0,i1|i1==N+1 && i0==N+1 && N>=1}
+		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
+		//{i,j|i+j>=N+1 && N>=1 && N>=i && N>=j && i+j>=1}
+		int i, j, k;
+	    float reduceVar, __temp__;
 
-		// Tiled portion
-		for (ii = 1; ii < N - 2; ii += BLOCK_SIZE) {
-			for (jj = ii; jj < N - 1; jj += BLOCK_SIZE) {
-				if ((N >= 2)) {
-					{
-						for(c2=jj; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
-						{
-							S1((0),(c2));
-						}
-					}
-				}
-				for(c1=ii; c1 <= min(ii + BLOCK_SIZE, N - 2); c1+=1)
-				{
-					S2((c1),(c1));
-					for(c2=c1+1; c2 <= min(jj + BLOCK_SIZE, N - 1); c2+=1)
-					{
-						S3((c1),(c2));
-					}
-				}
-			}
-		} // End tiled loops
+		H(N, N) = foo(A(N), B(N));
+		T(N, N) = __min_float(W(N, N), H(N, N));
+		// Double write unnecessary for diagonal
+		H(N - 1, N - 1) = foo(A(N - 1), B(N - 1));
+		T(N - 1, N - 1) = __min_float(W(N - 1, N - 1), H(N - 1, N - 1));
+		// Double write unnecessary for diagonal
+		H(N - 1, N) = __min_float(foo(A(N - 1), B(N)), __min_float(H(N, N), H(N - 1,N - 1)));
+		T(N - 1, N) = __min_float(__min_float(H(N - 1, N), W(N - 1, N)), (T(N - 1, N - 1) + T(N, N)));
+		// Double write
+		T(N, N - 1) = T(N - 1, N);
 
-		if ((N >= 2)) {
-			{
-				S2((N-1),(N-1));
+		for(i = N - 2; i >= 0; --i) {
+			H(i, i) = foo(A(i), B(i));
+			T(i, i) = __min_float(W(i, i), H(i, i));
+			// Double write unnecessary for diagonals
+			H(i, (i + 1)) = __min_float(foo(A(i), B(i + 1)), __min_float(H(i + 1, i + 1), H(i, i)));
+			T(i, (i + 1)) = __min_float(__min_float(H(i, i + 1), W(i, i + 1)), (T(i, i) + T(i + 1, i + 1)));
+			// Double write	
+			T((i + 1), i) = T(i, (i + 1));
+
+			for(j = i + 2; j <= N; ++j) {
+				H(i, j) = bar((foo(A(i), B(j))) + (T(i + 1, j - 1)), H(i + 1, j), H(i, j - 1));
+
+				reduceVar = FLT_MAX;
+				for(k = i; k <= j - 1; ++k) {
+					// Read the column entry in the corresponding row of the lower triangle
+					__temp__ = (T(i, k)) + (T(j, k + 1)); 
+					reduceVar = __min_float(reduceVar, __temp__);
+				}
+
+				T(i, j) = __min_float(__min_float(H(i, j), W(i, j)), reduceVar);
+				// Double write
+				T(j, i) = T(i, j);
 			}
 		}
-		S4(i0,i1);
+		*score = T(0, N);
 	}
-	#undef S0
-	#undef S1
-	#undef S2
-	#undef S3
-	#undef S4
 	
 	//Memory Free
+	free(_lin_T);
 	free(T);
+	
+	free(H);
 }
 
 //Memory Macros
 #undef A
 #undef B
+#undef W
 #undef T
+#undef H
 
 
 //Common Macro undefs

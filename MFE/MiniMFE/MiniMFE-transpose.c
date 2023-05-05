@@ -101,20 +101,13 @@ inline double __min_double(double x, double y){
 	return ((x)>(y) ? (y) : (x));
 }
 
-
-
-
-
-//Local Function Declarations
-float reduce_MiniMFE_T_1(long, int, int, float**);
-
 //Memory Macros
 #define A(i) A[i]
 #define B(i) B[i]
 #define W(i,j) W[i][j]
 #define T(i,j) T[i][j]
+#define T2(i,j) T2[i][j]
 #define H(i,j) H[MOD(i + j, N + 1)]
-#define BLOCK_SIZE 64
 
 void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	///Parameter checking
@@ -132,23 +125,19 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 	for (mz1=0;mz1 < N+1; mz1++) {
 		T[mz1] = &_lin_T[(mz1*(N+1))];
 	}
+
+	// Transpose of T
+	float* _lin_T2 = (float*)malloc(sizeof(float)*((N+1) * (N+1)));
+	mallocCheck(_lin_T2, ((N+1) * (N+1)), float);
+	float** T2 = (float**)malloc(sizeof(float*)*(N+1));
+	mallocCheck(T2, (N+1), float*);
+	for (mz1=0;mz1 < N+1; mz1++) {
+		T2[mz1] = &_lin_T2[(mz1*(N+1))];
+	}
 	
 	float* H = (float*)malloc(sizeof(float*)*(N+1));
 	mallocCheck(H, (N+1), float*);
 
-	#define S2(i,j) H(i,j) = foo(A(i),B(j))
-	#define S3(i,j) H(i,j) = __min_float(foo(A(i),B(j)),__min_float(H(i+1,j),H(i,j-1)))
-	#define S4(i,j) H(i,j) = bar((foo(A(i),B(j)))+(T(i+1,j-1)),H(i+1,j),H(i,j-1))
-	#define S5(i0,i1) *score = T(0,N)
-	#define S0(i,j) T(i,j) = __min_float(W(i,j),H(i,j))
-	#define S1(i,j) T(i,j) = __min_float(__min_float(H(i,j),W(i,j)),reduce_MiniMFE_T_1(N,i,j,T))
-
-	/*#define S2(i,j) H(-i+N,j) = foo(A(-i+N),B(j))
-	#define S3(i,j) H(-i+N,j) = __min_float(foo(A(-i+N),B(j)),__min_float(H(-i+N+1,j),H(-i+N,j-1)))
-	#define S4(i,j) H(-i+N,j) = bar((foo(A(-i+N),B(j)))+(T(-i+N+1,j-1)),H(-i+N+1,j),H(-i+N,j-1))
-	#define S5(i0,i1) *score = T(0,N)
-	#define S0(i,j) T(-i+N,j) = __min_float(W(-i+N,j),H(-i+N,j))
-	#define S1(i,j) T(-i+N,j) = __min_float(__min_float(H(-i+N,j),W(-i+N,j)),reduce_MiniMFE_T_1(N,-i+N,j,T))*/
 	{
 		//Domain
 		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
@@ -157,71 +146,57 @@ void MiniMFE(long N, float* A, float* B, float** W, float* score){
 		//{i0,i1|i1==N+1 && i0==N+1 && N>=1}
 		//{i,j|i+j==N && N>=1 && N>=i && i>=0}
 		//{i,j|i+j>=N+1 && N>=1 && N>=i && N>=j && i+j>=1}
-		int c1, c2, ii, jj;
-		S2((N),(N));
-		S0((N),(N));
-		S2((N-1),(N-1));
-		S0((N-1),(N-1));
-		S3((N-1),(N));
-		S1((N-1),(N));
+		int i, j, k;
+	    float reduceVar, __temp__;
 
-		for (ii = N-2; ii >= 0; ii -= BLOCK_SIZE) {
-			for (jj = ii; jj <= N-2; jj += (BLOCK_SIZE*2)) {
+		H(N, N) = foo(A(N), B(N));
+		T(N, N) = __min_float(W(N, N), H(N, N));
+		// Double write
+		T2(N, N) = T(N, N);
+		H(N - 1, N - 1) = foo(A(N - 1), B(N - 1));
+		T(N - 1, N - 1) = __min_float(W(N - 1, N - 1), H(N - 1, N - 1));
+		// Double write
+		T2(N - 1, N - 1) = T(N - 1, N - 1);
+		H(N - 1, N) = __min_float(foo(A(N - 1), B(N)), __min_float(H(N, N), H(N - 1,N - 1)));
+		T(N - 1, N) = __min_float(__min_float(H(N - 1, N), W(N - 1, N)), (T(N - 1, N - 1) + T(N, N)));
+		// Double write
+		T2(N, N - 1) = T(N - 1, N);
 
-				for(c1=ii; c1 >= max(ii - BLOCK_SIZE, 0); c1-=1){
-					S2((c1),(c1));
-					S0((c1),(c1));
-					S3((c1),(c1+1));
-					S1((c1),(c1+1));
-					for(c2=c1; c2 <= min(jj + (BLOCK_SIZE*2), N-2); c2+=1){
-						S4((c1),(c2+2));
-						S1((c1),(c2+2));
-					}
+		for(i = N - 2; i >= 0; --i) {
+			H(i, i) = foo(A(i), B(i));
+			T(i, i) = __min_float(W(i, i), H(i, i));
+			// Double write
+			T2(i, i) = T(i, i);
+			H(i, (i + 1)) = __min_float(foo(A(i), B(i + 1)), __min_float(H(i + 1, i + 1), H(i, i)));
+			T(i, (i + 1)) = __min_float(__min_float(H(i, i + 1), W(i, i + 1)), (T(i, i) + T(i + 1, i + 1)));
+			// Double write	
+			T2((i + 1), i) = T(i, (i + 1));
+
+			for(j = i + 2; j <= N; ++j) {
+				H(i, j) = bar((foo(A(i), B(j))) + (T(i + 1, j - 1)), H(i + 1, j), H(i, j - 1));
+
+				reduceVar = FLT_MAX;
+				for(k = i; k <= j - 1; ++k) {
+					__temp__ = (T(i, k)) + (T2(j, k + 1)); 
+					reduceVar = __min_float(reduceVar, __temp__);
 				}
 
+				T(i, j) = __min_float(__min_float(H(i, j), W(i, j)), reduceVar);
+				// Double write
+				T2(j, i) = T(i, j);
 			}
 		}
-
-		/*for(c1=N-2; c1 >= 0; c1-=1){
-		 	S2((c1),(c1));
-		 	S0((c1),(c1));
-		 	S3((c1),(c1+1));
-		 	S1((c1),(c1+1));
-		 	for(c2=c1; c2 <= N-2; c2+=1){
-		 	 	S4((c1),(c2+2));
-		 	 	S1((c1),(c2+2));
-		 	}
-		}*/
-
-		S5((N+1),(N+1));
+		*score = T(0, N);
 	}
-	#undef S2
-	#undef S3
-	#undef S4
-	#undef S5
-	#undef S0
-	#undef S1
 	
 	//Memory Free
 	free(_lin_T);
 	free(T);
+
+	free(_lin_T2);
+	free(T2);
 	
 	free(H);
-}
-float reduce_MiniMFE_T_1(long N, int ip, int jp, float** T){
-	float reduceVar = FLT_MAX;
-	#define S2(i,j,k) {float __temp__ = (T(i,k))+(T(k+1,j)); reduceVar = __min_float(reduceVar,__temp__); }
-	{
-		//Domain
-		//{i,j,k|jp>=ip+1 && N>=jp && ip>=0 && N>=1 && N+jp>=ip+1 && j>=k+1 && N+j>=i+1 && i>=0 && k>=i && N>=k && N>=j && k>=-1 && j>=i+1 && ip==i && jp==j}
-		int c3;
-		for(c3=ip;c3 <= jp-1;c3+=1)
-		 {
-		 	S2((ip),(jp),(c3));
-		 }
-	}
-	#undef S2
-	return reduceVar;
 }
 
 //Memory Macros
