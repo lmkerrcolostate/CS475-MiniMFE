@@ -38,9 +38,6 @@
 * Tiles the inner loops
 * Rectangular tiles, width > height
 
-#### swapJK
-* Swaps the two innermost loops j and k. Renamed from c2, c3. 
-
 #### transpose
 * Makes a copy of the T array that is transposed in T2.
 * The k/c3 innermost loop uses T2 for column dependencies.
@@ -48,3 +45,6 @@
 #### transpose1x
 * Stores transposed copy of T array in the lower triangle of T.
 * Similar performance but saves space from initial allocation
+
+#### swapJK
+* Swaps the two innermost loops j and k. Renamed from c2, c3. 
